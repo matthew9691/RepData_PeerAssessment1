@@ -1,25 +1,53 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+## Reproducible Research: Peer Assessment 1
+
+Submitted as part of the December 2014 Coursera session.
+
+### Loading and preprocessing the data
+Data is extracted assuming the repository has been cloned to local computer and has been set as the current working directory.
+
+```{r}
+wd <- "~/repos/RepData_PeerAssessment1"  # modify as required
+setwd(wd) 
+data <- read.csv(unzip("activity.zip"))
+data$date <- as.Date(data$date)
+```
 
 
-## Loading and preprocessing the data
+### What is mean total number of steps taken per day?
+```{r}
+steps <- aggregate(steps ~ date, data=data, sum)
+hist(steps$steps, 
+     main = "Histogram of total steps per day",
+     xlab = "Total steps per day")
+
+#png(file = paste0(wd,"/figures/plot1.png")) # send figure copy to figures folder
+#dev.off()
+
+mean_steps <- mean(steps$steps)
+median_steps <- median(steps$steps)
+```
+
+The mean number of steps per day is `r round(mean_steps, 2)` and the median number steps per day is `r median_steps`.
+
+### What is the average daily activity pattern?
+```{r}
+data$time_index <- c(1:288)/12 # assign each time interval its sequential number per day. Divide by 12 to get the integer numbers as hours.
+steps <- aggregate(steps ~ time_index, data=data, mean)
+
+plot(steps$steps ~ steps$time_index,
+     xlab = "Hour of each day",
+     ylab = "Number of steps in 5 minute intervals",
+     main = "Average number of steps during the day: October-November 2012", 
+     type = "l")
+#png(file = paste0(wd,"/figures/plot2.png"))
+#dev.off()
+```
 
 
 
-## What is mean total number of steps taken per day?
+
+### Imputing missing values
 
 
 
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+### Are there differences in activity patterns between weekdays and weekends?
