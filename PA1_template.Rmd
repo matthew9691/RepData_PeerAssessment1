@@ -14,14 +14,11 @@ data$date <- as.Date(data$date)
 
 
 ### What is mean total number of steps taken per day?
-```{r}
+```{r plot1-total-steps-per-day}
 steps <- aggregate(steps ~ date, data=data, sum)
 hist(steps$steps, 
      main = "Histogram of total steps per day",
      xlab = "Total steps per day")
-
-#png(file = paste0(wd,"/figures/plot1.png")) # send figure copy to figures folder
-#dev.off()
 
 mean_steps <- mean(steps$steps)
 median_steps <- median(steps$steps)
@@ -30,7 +27,7 @@ median_steps <- median(steps$steps)
 The mean number of steps per day is `r round(mean_steps, 2)` and the median number steps per day is `r median_steps`.
 
 ### What is the average daily activity pattern?
-```{r}
+```{r plot2-steps-by-time}
 data$time_index <- c(1:288)/12 # assign each time interval its sequential number per day. Divide by 12 to get the integer numbers as hours.
 steps <- aggregate(steps ~ time_index, data=data, mean)
 
@@ -39,8 +36,6 @@ plot(steps$steps ~ steps$time_index,
      ylab = "Number of steps in 5 minute intervals",
      main = "Average number of steps during the day: October-November 2012", 
      type = "l")
-#png(file = paste0(wd,"/figures/plot2.png"))
-#dev.off()
 ```
 
 
