@@ -8,11 +8,12 @@ This report analyses a dataset containing the number of steps taken by an indivi
 ### Loading and preprocessing the data
 Data is extracted assuming the project repository has been cloned to a local computer and that the repository folder is set as the current working directory.
 
-```{r cache=TRUE}
+```{r}
 wd <- "~/repos/RepData_PeerAssessment1"  # modify as required
 setwd(wd) 
 data <- read.csv(unzip("activity.zip"))
 data$date <- as.Date(data$date)
+head(data)
 ```
 
 
@@ -25,7 +26,10 @@ hist(steps$steps,
      col = "cornsilk")  # I just like the name of this colour, that's the only reason I put it in.
 
 mean_steps <- prettyNum(mean(steps$steps), digits = 1, format = "f")
+mean_steps
+
 median_steps <- median(steps$steps)
+median_steps
 ```
 
 The mean number of steps per day is `r mean_steps` and the median number steps per day is `r median_steps`.
@@ -34,6 +38,7 @@ The mean number of steps per day is `r mean_steps` and the median number steps p
 ```{r plot2-steps-by-time}
 data$time_index <- c(1:288)/12 # assign each time interval its sequential number per day.
 # Divide by 12 to get the integer numbers as hours to make the x-axis labels more meaningfull.
+head(data)
 steps <- aggregate(steps ~ time_index, data=data, mean)
 
 plot(steps$steps ~ steps$time_index,
@@ -43,14 +48,16 @@ plot(steps$steps ~ steps$time_index,
      type = "l",
      col = "blue")
 ```
-Averaging the total number of steps across the each time interval throughout the day shows regular activity between the sixth and twentieth hours of each day.
+
+Averaging the total number of steps across the each time interval throughout the day shows regular activity between the 6am and 8pm on average each day.
 
 ##### Now for some gratuitous speculation: 
-The lack of any significant activity between midnight (0 hours) and 5-6 am shows that the subject is not a shift worker and the pattern of daily activity is consistent with a typical office worker. The period of highest average number of steps is in the mid-morning (at around 8-9am) indicating walking to either the place of work or to catch public transport. However, the lack of a similar high level at the end of the working day suggests that either the subject takes public transport in the morning and gets a ride home from work in the afternoon, or alternatively the peak activity in the morning represents a regular run or walking on a treadmill at a gym.  
+The lack of any significant activity between midnight (0 hours) and 5-6 am shows that the subject is not a shift worker and the pattern of daily activity is possibly consistent with an office worker. The period of highest average number of steps is in the mid-morning (at around 8-9am) indicating walking to either the place of work or to catch public transport. However, the lack of a similar high level at the end of the working day suggests that either the subject gets a ride home from work in the afternoon, or alternatively the peak activity in the morning represents a regular run or walking on a treadmill at a gym.  
 
 ```{r}
 subset_max <- subset(steps, subset=(steps == max(steps)))  # extract the row with the maximum number of steps
 max_time <- subset_max[1]*12 # multiply by 12 to convert back to 5-minute intervals
+max_time
 ```
 The `r max_time`th 5-minute interval in the day contains the highest average number of steps across the two months (`r subset_max[2]`).
 
@@ -82,7 +89,9 @@ hist(steps_locf$steps_locf,
      col = "steelblue") # this is a pretty cool name for a colour too.
 
 mean_steps_locf <- prettyNum(mean(steps_locf$steps_locf), digits = 1, format = "f")
+mean_steps_locf
 median_steps_locf <- prettyNum(median(steps_locf$steps_locf), digits = 1, format = "f")
+median_steps_locf
 
 ```
 
@@ -94,3 +103,43 @@ The impact of imputing missing data is to slightly lower the median value, but t
 Low or no step activity makes up a large proportion of each day (and night), therefore if the missing data occurs randomly through  the day and night then a greater proportion of missing values will from low activity periods - ignoring these values result in a high bias of the mean value. The median is less sensitive to outliers (or missing values) and hence does not change as much between the two datasets.
 
 ### Are there differences in activity patterns between weekdays and weekends?
+
+Yes there is. Unlike weekdays, weekend days do not show a prominent peak in step rate at 8-9am supporting the earlier speculation that this represents walking either to work, or to public transport to go to work.
+
+
+```{r plot4-time-of-week}
+data$weekdays <- weekdays(data$date)
+lookup <- c(Monday = "weekday",
+            Tuesday = "weekday",
+            Wednesday = "weekday",
+            Thursday = "weekday",
+            Friday = "weekday",
+            Saturday = "weekend",
+            Sunday = "weekend")
+data$week <- as.factor(lookup[data$weekdays])
+data$time_index <- as.factor(c(1:288)/12) # assign each time interval its sequential number per day.
+weekdays <- data[data$week == "weekday",]
+weekends  <- data[data$week == "weekend",]
+
+steps_weekdays <- aggregate(steps_locf ~ time_index, data=weekdays, mean)
+steps_weekends <- aggregate(steps_locf ~ time_index, data=weekends, mean)
+
+steps_weekdays$week <- as.factor("Weekday")
+steps_weekends$week <- as.factor("Weekend")
+
+data_final <- rbind(steps_weekdays, steps_weekends)
+data_final$time_index <- as.numeric(data_final$time_index)
+
+library(lattice)
+xyplot(steps_locf ~ (time_index)/12 | week,
+       data=data_final,
+       layout = c(1,2),
+       type = "l",
+       xlab = "Hour of the day",
+       ylab = "Number of steps in 5 minute intervals",
+       main = "Average number of steps during the day - Weekends vs. Weekdays")
+
+```
+
+
+

@@ -14,6 +14,17 @@ wd <- "~/repos/RepData_PeerAssessment1"  # modify as required
 setwd(wd) 
 data <- read.csv(unzip("activity.zip"))
 data$date <- as.Date(data$date)
+head(data)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 
@@ -31,7 +42,20 @@ hist(steps$steps,
 
 ```r
 mean_steps <- prettyNum(mean(steps$steps), digits = 1, format = "f")
+mean_steps
+```
+
+```
+## [1] "10766"
+```
+
+```r
 median_steps <- median(steps$steps)
+median_steps
+```
+
+```
+## [1] 10765
 ```
 
 The mean number of steps per day is 10766 and the median number steps per day is 10765.
@@ -41,6 +65,20 @@ The mean number of steps per day is 10766 and the median number steps per day is
 ```r
 data$time_index <- c(1:288)/12 # assign each time interval its sequential number per day.
 # Divide by 12 to get the integer numbers as hours to make the x-axis labels more meaningfull.
+head(data)
+```
+
+```
+##   steps       date interval time_index
+## 1    NA 2012-10-01        0 0.08333333
+## 2    NA 2012-10-01        5 0.16666667
+## 3    NA 2012-10-01       10 0.25000000
+## 4    NA 2012-10-01       15 0.33333333
+## 5    NA 2012-10-01       20 0.41666667
+## 6    NA 2012-10-01       25 0.50000000
+```
+
+```r
 steps <- aggregate(steps ~ time_index, data=data, mean)
 
 plot(steps$steps ~ steps$time_index,
@@ -52,15 +90,22 @@ plot(steps$steps ~ steps$time_index,
 ```
 
 ![plot of chunk plot2-steps-by-time](figure/plot2-steps-by-time-1.png) 
-Averaging the total number of steps across the each time interval throughout the day shows regular activity between the sixth and twentieth hours of each day.
+
+Averaging the total number of steps across the each time interval throughout the day shows regular activity between the 6am and 8pm on average each day.
 
 ##### Now for some gratuitous speculation: 
-The lack of any significant activity between midnight (0 hours) and 5-6 am shows that the subject is not a shift worker and the pattern of daily activity is consistent with a typical office worker. The period of highest average number of steps is in the mid-morning (at around 8-9am) indicating walking to either the place of work or to catch public transport. However, the lack of a similar high level at the end of the working day suggests that either the subject takes public transport in the morning and gets a ride home from work in the afternoon, or alternatively the peak activity in the morning represents a regular run or walking on a treadmill at a gym.  
+The lack of any significant activity between midnight (0 hours) and 5-6 am shows that the subject is not a shift worker and the pattern of daily activity is possibly consistent with an office worker. The period of highest average number of steps is in the mid-morning (at around 8-9am) indicating walking to either the place of work or to catch public transport. However, the lack of a similar high level at the end of the working day suggests that either the subject gets a ride home from work in the afternoon, or alternatively the peak activity in the morning represents a regular run or walking on a treadmill at a gym.  
 
 
 ```r
 subset_max <- subset(steps, subset=(steps == max(steps)))  # extract the row with the maximum number of steps
 max_time <- subset_max[1]*12 # multiply by 12 to convert back to 5-minute intervals
+max_time
+```
+
+```
+##     time_index
+## 104        104
 ```
 The 104th 5-minute interval in the day contains the highest average number of steps across the two months (206.1698113).
 
@@ -102,7 +147,20 @@ hist(steps_locf$steps_locf,
 
 ```r
 mean_steps_locf <- prettyNum(mean(steps_locf$steps_locf), digits = 1, format = "f")
+mean_steps_locf
+```
+
+```
+## [1] "9359"
+```
+
+```r
 median_steps_locf <- prettyNum(median(steps_locf$steps_locf), digits = 1, format = "f")
+median_steps_locf
+```
+
+```
+## [1] "10395"
 ```
 
 The *mean* number of steps per day using the imputed data is 9359 and the *median* number of total steps per day is 10395. 
@@ -113,3 +171,45 @@ The impact of imputing missing data is to slightly lower the median value, but t
 Low or no step activity makes up a large proportion of each day (and night), therefore if the missing data occurs randomly through  the day and night then a greater proportion of missing values will from low activity periods - ignoring these values result in a high bias of the mean value. The median is less sensitive to outliers (or missing values) and hence does not change as much between the two datasets.
 
 ### Are there differences in activity patterns between weekdays and weekends?
+
+Yes there is. Unlike weekdays, weekend days do not show a prominent peak in step rate at 8-9am supporting the earlier speculation that this represents walking either to work, or to public transport to go to work.
+
+
+
+```r
+data$weekdays <- weekdays(data$date)
+lookup <- c(Monday = "weekday",
+            Tuesday = "weekday",
+            Wednesday = "weekday",
+            Thursday = "weekday",
+            Friday = "weekday",
+            Saturday = "weekend",
+            Sunday = "weekend")
+data$week <- as.factor(lookup[data$weekdays])
+data$time_index <- as.factor(c(1:288)/12) # assign each time interval its sequential number per day.
+weekdays <- data[data$week == "weekday",]
+weekends  <- data[data$week == "weekend",]
+
+steps_weekdays <- aggregate(steps_locf ~ time_index, data=weekdays, mean)
+steps_weekends <- aggregate(steps_locf ~ time_index, data=weekends, mean)
+
+steps_weekdays$week <- as.factor("Weekday")
+steps_weekends$week <- as.factor("Weekend")
+
+data_final <- rbind(steps_weekdays, steps_weekends)
+data_final$time_index <- as.numeric(data_final$time_index)
+
+library(lattice)
+xyplot(steps_locf ~ (time_index)/12 | week,
+       data=data_final,
+       layout = c(1,2),
+       type = "l",
+       xlab = "Hour of the day",
+       ylab = "Number of steps in 5 minute intervals",
+       main = "Average number of steps during the day - Weekends vs. Weekdays")
+```
+
+![plot of chunk plot4-time-of-week](figure/plot4-time-of-week-1.png) 
+
+
+
