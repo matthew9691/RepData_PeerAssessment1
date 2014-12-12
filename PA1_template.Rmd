@@ -59,7 +59,7 @@ subset_max <- subset(steps, subset=(steps == max(steps)))  # extract the row wit
 max_time <- subset_max[1]*12 # multiply by 12 to convert back to 5-minute intervals
 max_time
 ```
-The `r max_time`th 5-minute interval in the day contains the highest average number of steps across the two months (`r subset_max[2]`).
+The `r max_time`th 5-minute interval in the day (`r paste0(floor(max_time/12),":",(max_time %% 12)*5)`) contains the highest average number of steps across the two months (`r subset_max[2]`)..
 
 ##### Now for even more speculation:
 The maximum average step rate at is about 40 steps per minute, or less than one a second. A pace of this speed is more likely to be a brisk walk rather than a run - therefore I suggest the subject walks to catch public transport in the morning, but gets a car ride home from work. 

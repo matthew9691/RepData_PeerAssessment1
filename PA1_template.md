@@ -107,7 +107,7 @@ max_time
 ##     time_index
 ## 104        104
 ```
-The 104th 5-minute interval in the day contains the highest average number of steps across the two months (206.1698113).
+The 104th 5-minute interval in the day (8:40) contains the highest average number of steps across the two months (206.1698113)..
 
 ##### Now for even more speculation:
 The maximum average step rate at is about 40 steps per minute, or less than one a second. A pace of this speed is more likely to be a brisk walk rather than a run - therefore I suggest the subject walks to catch public transport in the morning, but gets a car ride home from work. 
